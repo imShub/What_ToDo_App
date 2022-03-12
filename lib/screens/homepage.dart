@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:what_todo_app/database_helper.dart';
 import 'package:what_todo_app/screens/taskpage.dart';
 import 'package:what_todo_app/widgets.dart';
+
+import '../models/task.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -11,6 +14,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  DatabaseHelper _dbHelper = DatabaseHelper();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,21 +39,21 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   Expanded(
-                    child: ScrollConfiguration(
-                      behavior: NoGlowBehavior(),
-                      child: ListView(
-                        children: [
-                          TaskCardWidget(
-                            title: "Get Started",
-                            desc:
-                                "Hello World ! Welcome to What ToDO App, this is a default task that you can edit or delete to start using the app.",
+                    child: FutureBuilder(
+                      future: _dbHelper.getTasks(),
+                      builder: (context, AsyncSnapshot<List<Task>> snapshot) {
+                        return ScrollConfiguration(
+                          behavior: NoGlowBehavior(),
+                          child: ListView.builder(
+                            itemCount: snapshot.data?.length,
+                            itemBuilder: (context, index) {
+                              return TaskCardWidget(
+                                title: snapshot.data?[index].title,
+                              );
+                            },
                           ),
-                          TaskCardWidget(),
-                          TaskCardWidget(),
-                          TaskCardWidget(),
-                          TaskCardWidget(),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                   ),
                 ],
@@ -59,10 +64,11 @@ class _HomePageState extends State<HomePage> {
                 child: GestureDetector(
                   onTap: () {
                     Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => TaskPage(),
-                        ));
+                      context,
+                      MaterialPageRoute(builder: (context) => TaskPage()),
+                    ).then((value) {
+                      setState(() {});
+                    });
                   },
                   child: Container(
                     width: 60.0,
